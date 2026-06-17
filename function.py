@@ -1,23 +1,28 @@
 import webview
+import json
+from pc_scan_one import scan_computer
 
 class BridgeAPI:
-    """
-    This class connects your Python code to your teammate's HTML.
-    Any function you put here can be used by their UI.
-    """
+
     def test_bridge(self):
         return "Python is connected!"
 
-def start_app():
-    # This is the pywebview window element looking for UI.html
-    window = webview.create_window(
-        title="Our Team Project",
-        url="UI.html",
-        js_api=BridgeAPI(),
-        width=800,
-        height=600
-    )
-    webview.start()
+    def run_scan(self):
 
-if __name__ == "__main__":
-    start_app()
+        scan_computer()
+
+        with open("scan-results.json","r",encoding="utf-8") as f:
+            data = json.load(f)
+
+        return data
+
+
+window = webview.create_window(
+    "Security Agent",
+    "UI.html",
+    js_api=BridgeAPI(),
+    width=1100,
+    height=700
+)
+
+webview.start()
