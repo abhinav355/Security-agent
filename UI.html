@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Agent</title>
+<style>
+  :root {
+    --bg-base: #0f1115;
+    --bg-elev: #181b21;
+    --bg-card: #1e222a;
+    --bg-card-hover: #242932;
+    --border: #2a2f3a;
+    --border-soft: #232831;
+    --text: #e6e9ef;
+    --text-muted: #8b94a3;
+    --text-dim: #5d6573;
+    --accent: #3ba55d;
+    --accent-bright: #4cc274;
+    --accent-soft: #2d8a48;
+    --accent-glow: rgba(59, 165, 93, 0.15);
+    --blue: #4a90e2;
+    --warn: #f0b429;
+    --danger: #e5484d;
+    --shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    background: var(--bg-base);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+
+  #app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+
+  .page {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0s;
+  }
+
+  
+  #page-splash {
+    background: radial-gradient(ellipse at center, #1a1f28 0%, #0a0c10 100%);
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition: opacity 0.6s ease;
+  }
+
+  #page-splash.fade-out {
+    opacity: 0;
+  }
+
+  .splash-content {
+    text-align: center;
+    animation: splashIn 0.9s ease;
+  }
+
+  @keyframes splashIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .splash-shield {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 28px;
+    color: var(--accent);
+    filter: drop-shadow(0 0 18px var(--accent-glow));
+    animation: shieldPulse 2.4s ease-in-out infinite;
+  }
+
+  @keyframes shieldPulse {
+    0%, 100% { transform: scale(1); opacity: 0.92; }
+    50% { transform: scale(1.05); opacity: 1; }
+  }
+
+  .splash-small {
+    font-size: 11px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .splash-big {
+    font-size: 42px;
+    font-weight: 300;
+    letter-spacing: 9px;
+    color: var(--text);
+  }
+
+  .splash-loader {
+    width: 140px;
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    margin: 36px auto 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .splash-loader::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -40%;
+    width: 40%;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 1px;
+    animation: loaderSlide 1.4s ease-in-out infinite;
+  }
+
+  @keyframes loaderSlide {
+    0% { left: -40%; }
+    100% { left: 100%; }
+  }
+
+
+  .topbar {
+    height: 56px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--bg-base);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .brand-shield {
+    width: 22px;
+    height: 22px;
+    color: var(--accent);
+  }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s ease;
+  }
+
+  .icon-btn:hover {
+    background: var(--bg-card);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px 48px;
+  }
+
+  
+  .hero {
+    margin-bottom: 32px;
+  }
+
+  .hero h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .hero p {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .modules {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 14px;
+    max-width: 880px;
+  }
+
+  .module-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .module-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .module-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-soft);
+    transform: translateY(-1px);
+  }
+
+  .module-card:hover::before { opacity: 1; }
+
+  .module-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--accent-glow);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .module-info { flex: 1; }
+
+  .module-info h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .module-info p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .module-arrow {
+    color: var(--text-dim);
+    font-size: 18px;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .module-card:hover .module-arrow {
+    color: var(--accent);
+    transform: translateX(3px);
+  }
+
+  
+  .scanner-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 6px;
+  }
+
+  .back-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.18s ease;
+    font-family: inherit;
+  }
+
+  .back-btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-soft);
+  }
+
+  .scanner-title {
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .scanner-sub {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .scan-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 24px;
+    max-width: 880px;
+  }
+
+  .scan-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .scan-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition: background 0.25s ease;
+  }
+
+  .status-dot.scanning {
+    background: var(--blue);
+    box-shadow: 0 0 10px var(--blue);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  .status-dot.complete { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .status-dot.error { background: var(--danger); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .primary-btn {
+    background: var(--accent);
+    color: #0a0c10;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+  }
+
+  .primary-btn:hover:not(:disabled) {
+    background: var(--accent-bright);
+    transform: translateY(-1px);
+  }
+
+  .primary-btn:disabled {
+    background: var(--bg-elev);
+    color: var(--text-dim);
+    cursor: not-allowed;
+  }
+
+  .progress {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 18px;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .progress.active { opacity: 1; }
+
+  .progress-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--blue));
+    transition: width 0.3s ease;
+  }
+
+  
+  .results-section { max-width: 880px; }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .results-header h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+  }
+
+  .results-count {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .result-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: itemIn 0.35s ease forwards;
+  }
+
+  @keyframes itemIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg-elev);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .result-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .result-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .result-path {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: "Consolas", "SF Mono", "Courier New", monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .risk-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  .risk-LOW {
+    background: rgba(59, 165, 93, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(59, 165, 93, 0.3);
+  }
+
+  .risk-MEDIUM {
+    background: rgba(240, 180, 41, 0.15);
+    color: var(--warn);
+    border: 1px solid rgba(240, 180, 41, 0.3);
+  }
+
+  .risk-HIGH {
+    background: rgba(229, 72, 77, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(229, 72, 77, 0.3);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 13px;
+    background: var(--bg-card);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+
+  
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+    z-index: 100;
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.25s ease, visibility 0s linear 0s;
+  }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    width: 460px;
+    max-width: 90vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+    transform: scale(0.95);
+    transition: transform 0.25s ease;
+  }
+
+  .modal-overlay.active .modal { transform: scale(1); }
+
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+
+  .modal-title {
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    transition: all 0.18s ease;
+  }
+
+  .modal-close:hover {
+    background: var(--bg-elev);
+    color: var(--text);
+  }
+
+  .modal-section { margin-bottom: 22px; }
+  .modal-section:last-child { margin-bottom: 0; }
+
+  .modal-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .modal-value {
+    font-size: 14px;
+    color: var(--text);
+    font-family: "Consolas", "SF Mono", monospace;
+  }
+
+  .module-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .module-list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    padding: 9px 12px;
+    background: var(--bg-elev);
+    border-radius: 6px;
+    border: 1px solid var(--border-soft);
+  }
+
+  .module-list-item.active { color: var(--accent); }
+  .module-list-item.future { color: var(--text-dim); }
+
+  .module-tag {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-left: auto;
+    letter-spacing: 0.5px;
+  }
+
+  .tag-active {
+    background: var(--accent-glow);
+    color: var(--accent);
+  }
+
+  .tag-planned {
+    background: var(--bg-card);
+    color: var(--text-dim);
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  
+  <section id="page-splash" class="page active">
+    <div class="splash-content">
+      <svg class="splash-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5l-8-3z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+      <div class="splash-small">what to say here (tell me😭)</div>
+      <h1 class="splash-big">SECURITY AGENT</h1>
+      <div class="splash-loader"></div>
+    </div>
+  </section>
+
+  <section id="page-home" class="page">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5l-8-3z"/>
+        </svg>
+        <span>Security Agent</span>
+      </div>
+      <button id="about-btn-home" class="icon-btn" title="About" aria-label="About">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </button>
+    </header>
+    <main class="content">
+      <div class="hero">
+        <h2>Device protection</h2>
+        <p>Choose a module to begin scanning your system.</p>
+      </div>
+      <div class="modules">
+        <div class="module-card" data-target="scanner">
+          <div class="module-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+              <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+              <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+              <path d="M7 12h10"/>
+            </svg>
+          </div>
+          <div class="module-info">
+            <h3>File Scanner</h3>
+            <p>Detect suspicious files (.bat .cmd .ps1 .vbs .exe) --> if I add it..</p>
+          </div>
+          <div class="module-arrow">→</div>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <section id="page-scanner" class="page">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5l-8-3z"/>
+        </svg>
+        <span>Security Agent</span>
+      </div>
+      <button id="about-btn-scanner" class="icon-btn" title="About" aria-label="About">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </button>
+    </header>
+    <main class="content">
+      <div class="scanner-head">
+        <button class="back-btn" id="back-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back
+        </button>
+        <div class="scanner-title">File Scanner</div>
+      </div>
+      <div class="scanner-sub">Scans common directories for executable and script files that may pose a security risk.</div>
+
+      <div class="scan-panel">
+        <div class="scan-row">
+          <div class="scan-status">
+            <span id="status-dot" class="status-dot"></span>
+            <span id="status-text">Idle — ready to scan</span>
+          </div>
+          <button id="start-scan" class="primary-btn">Start Scan</button>
+        </div>
+        <div id="progress" class="progress">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="results-section">
+        <div class="results-header">
+          <h3>Detected Files</h3>
+          <span id="results-count" class="results-count"></span>
+        </div>
+        <div id="results-list" class="results-list">
+          <div class="empty-state">No scan has been run yet.</div>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <div id="about-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">About Security Agent</div>
+        <button class="modal-close" id="modal-close-btn" aria-label="Close">×</button>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-label">Version</div>
+        <div class="modal-value">idkk(change it later)</div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-label">Active Modules</div>
+        <div class="module-list">
+          <div class="module-list-item active">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/>
+            </svg>
+            File Scanner
+            <span class="module-tag tag-active">ACTIVE</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-label">Planned Modules</div>
+        <div class="module-list">
+          <div class="module-list-item future">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            we will see
+            <span class="module-tag tag-planned">PLANNED</span>
+          </div>
+          <div class="module-list-item future">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="6" width="18" height="12" rx="2"/>
+              <path d="M7 10h4M7 14h2"/>
+            </svg>
+            same
+            <span class="module-tag tag-planned">PLANNED</span>
+          </div>
+          <div class="module-list-item future">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M9 9h6v6H9z"/>
+            </svg>
+            idk
+            <span class="module-tag tag-planned">PLANNED</span>
+          </div>
+          <div class="module-list-item future">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>
+            </svg>
+            ok firewall
+            <span class="module-tag tag-planned">PLANNED</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const App = {
+    currentPage: 'splash',
+    pywebviewReady: false,
+    scanning: false,
+
+    init() {
+      window.addEventListener('pywebviewready', () => {
+        this.pywebviewReady = true;
+      });
+
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const splash = document.getElementById('page-splash');
+          splash.classList.add('fade-out');
+          setTimeout(() => this.navigate('home'), 600);
+        }, 2400);
+      });
+
+      this.bindEvents();
+    },
+
+    bindEvents() {
+      document.querySelectorAll('.module-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const target = card.dataset.target;
+          if (target) this.navigate(target);
+        });
+      });
+
+      // Back button
+      document.getElementById('back-btn').addEventListener('click', () => {
+        this.navigate('home');
+      });
+
+      // About buttons (both pages)
+      document.getElementById('about-btn-home').addEventListener('click', () => this.openAbout());
+      document.getElementById('about-btn-scanner').addEventListener('click', () => this.openAbout());
+
+      // Modal close
+      document.getElementById('modal-close-btn').addEventListener('click', () => this.closeAbout());
+      document.getElementById('about-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'about-modal') this.closeAbout();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') this.closeAbout();
+      });
+
+      document.getElementById('start-scan').addEventListener('click', () => this.startScan());
+    },
+
+    navigate(page) {
+      if (this.currentPage === page) return;
+      const current = document.getElementById('page-' + this.currentPage);
+      const next = document.getElementById('page-' + page);
+      if (!next) return;
+
+      current.classList.remove('active');
+      next.classList.add('active');
+      this.currentPage = page;
+    },
+
+    openAbout() {
+      document.getElementById('about-modal').classList.add('active');
+    },
+
+    closeAbout() {
+      document.getElementById('about-modal').classList.remove('active');
+    },
+
+    //what was the problemm here!!
+    async startScan() {
+      if (this.scanning) return;
+      this.scanning = true;
+
+      const startBtn = document.getElementById('start-scan');
+      const statusDot = document.getElementById('status-dot');
+      const statusText = document.getElementById('status-text');
+      const progress = document.getElementById('progress');
+      const progressBar = document.getElementById('progress-bar');
+      const resultsList = document.getElementById('results-list');
+      const resultsCount = document.getElementById('results-count');
+
+      startBtn.disabled = true;
+      startBtn.textContent = 'Scanning...';
+      resultsList.innerHTML = '';
+      resultsCount.textContent = '';
+
+      progress.classList.add('active');
+      progressBar.style.width = '0%';
+
+      statusDot.className = 'status-dot scanning';
+      statusText.textContent = 'Scanning system...';
+
+      
+      let progressVal = 0;
+      const progressTimer = setInterval(() => {
+        progressVal = Math.min(progressVal + Math.random() * 8, 90);
+        progressBar.style.width = progressVal + '%';
+      }, 220);
+
+      try {
+        const result = await this.callPythonScan();
+        clearInterval(progressTimer);
+        progressBar.style.width = '100%';
+
+        this.renderResults(result);
+
+        statusDot.className = 'status-dot complete';
+        statusText.textContent = `Complete — ${result.total_found} file(s) found`;
+
+        setTimeout(() => {
+          progress.classList.remove('active');
+          progressBar.style.width = '0%';
+        }, 900);
+      } catch (err) {
+        clearInterval(progressTimer);
+        statusDot.className = 'status-dot error';
+        statusText.textContent = 'Scan failed — ' + (err.message || 'unknown error');
+        progress.classList.remove('active');
+      } finally {
+        this.scanning = false;
+        startBtn.disabled = false;
+        startBtn.textContent = 'Start Scan';
+      }
+    },
+
+    async callPythonScan() {
+      if (this.pywebviewReady && window.pywebview && window.pywebview.api) {
+        const res = await window.pywebview.api.run_scan();
+        
+        if (typeof res === 'string') {
+          return JSON.parse(res);
+        }
+        return res;
+      } else {
+        
+        return this.mockScan();
+      }
+    },
+
+    mockScan() {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            total_found: 3,
+            files_found: [
+              { name: 'cleanup.bat',    path: 'C:\\Users\\Demo\\Desktop\\cleanup.bat',         risk: 'LOW' },
+              { name: 'install.ps1',    path: 'C:\\Users\\Demo\\Downloads\\install.ps1',       risk: 'MEDIUM' },
+              { name: 'rundll32.exe',   path: 'C:\\Users\\Demo\\AppData\\Temp\\rundll32.exe',  risk: 'HIGH' }
+            ]
+          });
+        }, 1800);
+      });
+    },
+
+    renderResults(result) {
+      const files = result.files_found || [];
+      const resultsList = document.getElementById('results-list');
+      const resultsCount = document.getElementById('results-count');
+
+      resultsCount.textContent = `${result.total_found} item${result.total_found !== 1 ? 's' : ''}`;
+
+      if (files.length === 0) {
+        resultsList.innerHTML = '<div class="empty-state">No suspicious files detected.</div>';
+        return;
+      }
+
+      resultsList.innerHTML = '';
+      files.forEach((file, i) => {
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        item.style.animationDelay = (i * 60) + 'ms';
+
+        const risk = String(file.risk || 'LOW').toUpperCase();
+        const riskClass = ['LOW', 'MEDIUM', 'HIGH'].includes(risk) ? risk : 'LOW';
+
+        item.innerHTML = `
+          <div class="result-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <path d="M14 2v6h6"/>
+            </svg>
+          </div>
+          <div class="result-info">
+            <div class="result-name">${this.escapeHtml(file.name)}</div>
+            <div class="result-path">${this.escapeHtml(file.path)}</div>
+          </div>
+          <div class="risk-badge risk-${riskClass}">${risk}</div>
+        `;
+
+        resultsList.appendChild(item);
+      });
+    },
+
+    escapeHtml(str) {
+      if (str == null) return '';
+      return String(str).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+  };
+
+  App.init();
+</script>
+</body>
+</html>
