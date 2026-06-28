@@ -504,6 +504,12 @@
     text-overflow: ellipsis;
   }
 
+  .result-match {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+
   .risk-badge {
     font-size: 11px;
     font-weight: 600;
@@ -682,7 +688,7 @@
         <path d="M12 2L4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5l-8-3z"/>
         <path d="M9 12l2 2 4-4"/>
       </svg>
-      <div class="splash-small">what to say here (tell me😭)</div>
+      <div class="splash-small">(7gs) add text of what</div>
       <h1 class="splash-big">SECURITY AGENT</h1>
       <div class="splash-loader"></div>
     </div>
@@ -696,7 +702,7 @@
         </svg>
         <span>Security Agent</span>
       </div>
-      <button id="about-btn-home" class="icon-btn" title="About" aria-label="About">
+      <button id="about-btn-home" class="icon-btn about-trigger" title="About" aria-label="About">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -706,7 +712,7 @@
     <main class="content">
       <div class="hero">
         <h2>Device protection</h2>
-        <p>Choose a module to begin scanning your system.</p>
+        <p>Choose a scanner to begin scanning your system.</p>
       </div>
       <div class="modules">
         <div class="module-card" data-target="scanner">
@@ -721,7 +727,20 @@
           </div>
           <div class="module-info">
             <h3>File Scanner</h3>
-            <p>Detect suspicious files (.bat .cmd .ps1 .vbs .exe) --> if I add it..</p>
+            <p>Detects suspicious scripts and executables (.bat, .cmd, .ps1, .vbs, .exe) in common folders.</p>
+          </div>
+          <div class="module-arrow">→</div>
+        </div>
+        <div class="module-card" data-target="rnfscanner">
+          <div class="module-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"/>
+              <path d="M21 21l-4.3-4.3"/>
+            </svg>
+          </div>
+          <div class="module-info">
+            <h3>Threat Name Scanner</h3>
+            <p>Searches your files for known malware, RAT, and hacking-tool names.</p>
           </div>
           <div class="module-arrow">→</div>
         </div>
@@ -737,7 +756,7 @@
         </svg>
         <span>Security Agent</span>
       </div>
-      <button id="about-btn-scanner" class="icon-btn" title="About" aria-label="About">
+      <button id="about-btn-scanner" class="icon-btn about-trigger" title="About" aria-label="About">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -781,6 +800,58 @@
     </main>
   </section>
 
+  <section id="page-rnfscanner" class="page">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5l-8-3z"/>
+        </svg>
+        <span>Security Agent</span>
+      </div>
+      <button id="about-btn-rnfscanner" class="icon-btn about-trigger" title="About" aria-label="About">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </button>
+    </header>
+    <main class="content">
+      <div class="scanner-head">
+        <button class="back-btn" id="rnf-back-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back
+        </button>
+        <div class="scanner-title">Threat Name Scanner</div>
+      </div>
+      <div class="scanner-sub">Scans your user folder for filenames matching known malware, RAT, and hacking-tool names, plus flags .msi installers for manual review.</div>
+
+      <div class="scan-panel">
+        <div class="scan-row">
+          <div class="scan-status">
+            <span id="rnf-status-dot" class="status-dot"></span>
+            <span id="rnf-status-text">Idle — ready to scan</span>
+          </div>
+          <button id="rnf-start-scan" class="primary-btn">Start Scan</button>
+        </div>
+        <div id="rnf-progress" class="progress">
+          <div id="rnf-progress-bar" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="results-section">
+        <div class="results-header">
+          <h3>Detected Files</h3>
+          <span id="rnf-results-count" class="results-count"></span>
+        </div>
+        <div id="rnf-results-list" class="results-list">
+          <div class="empty-state">No scan has been run yet.</div>
+        </div>
+      </div>
+    </main>
+  </section>
+
   <div id="about-modal" class="modal-overlay">
     <div class="modal">
       <div class="modal-head">
@@ -790,7 +861,7 @@
 
       <div class="modal-section">
         <div class="modal-label">Version</div>
-        <div class="modal-value">idkk(change it later)</div>
+        <div class="modal-value">v0.2.0 (Dev Build)</div>
       </div>
 
       <div class="modal-section">
@@ -801,6 +872,14 @@
               <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/>
             </svg>
             File Scanner
+            <span class="module-tag tag-active">ACTIVE</span>
+          </div>
+          <div class="module-list-item active">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"/>
+              <path d="M21 21l-4.3-4.3"/>
+            </svg>
+            Threat Name Scanner
             <span class="module-tag tag-active">ACTIVE</span>
           </div>
         </div>
@@ -851,7 +930,7 @@
   const App = {
     currentPage: 'splash',
     pywebviewReady: false,
-    scanning: false,
+    scanLocks: {},
 
     init() {
       window.addEventListener('pywebviewready', () => {
@@ -876,17 +955,16 @@
           if (target) this.navigate(target);
         });
       });
-
-      // Back button
-      document.getElementById('back-btn').addEventListener('click', () => {
-        this.navigate('home');
+      document.querySelectorAll('.back-btn').forEach(btn => {
+        btn.addEventListener('click', () => this.navigate('home'));
       });
 
-      // About buttons (both pages)
-      document.getElementById('about-btn-home').addEventListener('click', () => this.openAbout());
-      document.getElementById('about-btn-scanner').addEventListener('click', () => this.openAbout());
+      // About buttons — every page uses the same .about-trigger class
+      document.querySelectorAll('.about-trigger').forEach(btn => {
+        btn.addEventListener('click', () => this.openAbout());
+      });
 
-      // Modal close
+      
       document.getElementById('modal-close-btn').addEventListener('click', () => this.closeAbout());
       document.getElementById('about-modal').addEventListener('click', (e) => {
         if (e.target.id === 'about-modal') this.closeAbout();
@@ -896,7 +974,8 @@
         if (e.key === 'Escape') this.closeAbout();
       });
 
-      document.getElementById('start-scan').addEventListener('click', () => this.startScan());
+      document.getElementById('start-scan').addEventListener('click', () => this.runScan('fileScanner'));
+      document.getElementById('rnf-start-scan').addEventListener('click', () => this.runScan('rnfScanner'));
     },
 
     navigate(page) {
@@ -917,19 +996,39 @@
     closeAbout() {
       document.getElementById('about-modal').classList.remove('active');
     },
+    SCAN_CONFIG: {
+      fileScanner: {
+        apiMethod: 'run_scan',
+        els: {
+          startBtn: 'start-scan', statusDot: 'status-dot', statusText: 'status-text',
+          progress: 'progress', progressBar: 'progress-bar',
+          resultsList: 'results-list', resultsCount: 'results-count'
+        },
+        showMatch: false
+      },
+      rnfScanner: {
+        apiMethod: 'run_rnf_scan',
+        els: {
+          startBtn: 'rnf-start-scan', statusDot: 'rnf-status-dot', statusText: 'rnf-status-text',
+          progress: 'rnf-progress', progressBar: 'rnf-progress-bar',
+          resultsList: 'rnf-results-list', resultsCount: 'rnf-results-count'
+        },
+        showMatch: true
+      }
+    },
 
-    //what was the problemm here!!
-    async startScan() {
-      if (this.scanning) return;
-      this.scanning = true;
+    async runScan(key) {
+      if (this.scanLocks[key]) return;
+      this.scanLocks[key] = true;
 
-      const startBtn = document.getElementById('start-scan');
-      const statusDot = document.getElementById('status-dot');
-      const statusText = document.getElementById('status-text');
-      const progress = document.getElementById('progress');
-      const progressBar = document.getElementById('progress-bar');
-      const resultsList = document.getElementById('results-list');
-      const resultsCount = document.getElementById('results-count');
+      const cfg = this.SCAN_CONFIG[key];
+      const startBtn = document.getElementById(cfg.els.startBtn);
+      const statusDot = document.getElementById(cfg.els.statusDot);
+      const statusText = document.getElementById(cfg.els.statusText);
+      const progress = document.getElementById(cfg.els.progress);
+      const progressBar = document.getElementById(cfg.els.progressBar);
+      const resultsList = document.getElementById(cfg.els.resultsList);
+      const resultsCount = document.getElementById(cfg.els.resultsCount);
 
       startBtn.disabled = true;
       startBtn.textContent = 'Scanning...';
@@ -942,7 +1041,6 @@
       statusDot.className = 'status-dot scanning';
       statusText.textContent = 'Scanning system...';
 
-      
       let progressVal = 0;
       const progressTimer = setInterval(() => {
         progressVal = Math.min(progressVal + Math.random() * 8, 90);
@@ -950,11 +1048,11 @@
       }, 220);
 
       try {
-        const result = await this.callPythonScan();
+        const result = await this.callPython(cfg.apiMethod, key);
         clearInterval(progressTimer);
         progressBar.style.width = '100%';
 
-        this.renderResults(result);
+        this.renderResults(result, resultsList, resultsCount, cfg.showMatch);
 
         statusDot.className = 'status-dot complete';
         statusText.textContent = `Complete — ${result.total_found} file(s) found`;
@@ -969,45 +1067,56 @@
         statusText.textContent = 'Scan failed — ' + (err.message || 'unknown error');
         progress.classList.remove('active');
       } finally {
-        this.scanning = false;
+        this.scanLocks[key] = false;
         startBtn.disabled = false;
         startBtn.textContent = 'Start Scan';
       }
     },
 
-    async callPythonScan() {
+    async callPython(method, key) {
       if (this.pywebviewReady && window.pywebview && window.pywebview.api) {
-        const res = await window.pywebview.api.run_scan();
-        
+        const res = await window.pywebview.api[method]();
+
         if (typeof res === 'string') {
           return JSON.parse(res);
         }
         return res;
       } else {
-        
-        return this.mockScan();
+        return key === 'rnfScanner' ? this.mockRnfScan() : this.mockFileScan();
       }
     },
 
-    mockScan() {
+    mockFileScan() {
       return new Promise(resolve => {
         setTimeout(() => {
           resolve({
             total_found: 3,
             files_found: [
-              { name: 'cleanup.bat',    path: 'C:\\Users\\Demo\\Desktop\\cleanup.bat',         risk: 'LOW' },
-              { name: 'install.ps1',    path: 'C:\\Users\\Demo\\Downloads\\install.ps1',       risk: 'MEDIUM' },
-              { name: 'rundll32.exe',   path: 'C:\\Users\\Demo\\AppData\\Temp\\rundll32.exe',  risk: 'HIGH' }
+              { name: 'cleanup.bat',    path: 'C:\\Users\\Demo\\Desktop\\cleanup.bat',         risk_level: 'LOW' },
+              { name: 'install.ps1',    path: 'C:\\Users\\Demo\\Downloads\\install.ps1',       risk_level: 'MEDIUM' },
+              { name: 'rundll32.exe',   path: 'C:\\Users\\Demo\\AppData\\Temp\\rundll32.exe',  risk_level: 'HIGH' }
             ]
           });
         }, 1800);
       });
     },
 
-    renderResults(result) {
+    mockRnfScan() {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            total_found: 2,
+            files_found: [
+              { name: 'mimikatz.exe',     path: 'C:\\Users\\Demo\\Downloads\\mimikatz.exe',     risk_level: 'HIGH', match_reason: 'mimikatz' },
+              { name: 'setup_helper.msi', path: 'C:\\Users\\Demo\\Downloads\\setup_helper.msi', risk_level: 'LOW',  match_reason: 'MSI installer' }
+            ]
+          });
+        }, 1800);
+      });
+    },
+
+    renderResults(result, resultsList, resultsCount, showMatch) {
       const files = result.files_found || [];
-      const resultsList = document.getElementById('results-list');
-      const resultsCount = document.getElementById('results-count');
 
       resultsCount.textContent = `${result.total_found} item${result.total_found !== 1 ? 's' : ''}`;
 
@@ -1022,8 +1131,11 @@
         item.className = 'result-item';
         item.style.animationDelay = (i * 60) + 'ms';
 
-        const risk = String(file.risk || 'LOW').toUpperCase();
+        const risk = String(file.risk_level || file.risk || 'LOW').toUpperCase();
         const riskClass = ['LOW', 'MEDIUM', 'HIGH'].includes(risk) ? risk : 'LOW';
+        const matchLine = (showMatch && file.match_reason)
+          ? `<div class="result-match">Matched: ${this.escapeHtml(file.match_reason)}</div>`
+          : '';
 
         item.innerHTML = `
           <div class="result-icon">
@@ -1035,6 +1147,7 @@
           <div class="result-info">
             <div class="result-name">${this.escapeHtml(file.name)}</div>
             <div class="result-path">${this.escapeHtml(file.path)}</div>
+            ${matchLine}
           </div>
           <div class="risk-badge risk-${riskClass}">${risk}</div>
         `;
