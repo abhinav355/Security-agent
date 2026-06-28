@@ -38,7 +38,7 @@ def sha256(path):
                     break
                 h.update(chunk)
         return h.hexdigest()
-    except:
+    except OSError:
         return "Unknown"
 
 
@@ -48,17 +48,19 @@ def calculate_risk(name, ext, path):
     if ext in SUSPICIOUS_EXTENSIONS:
         score += 20
 
+    name_lower = name.lower()
     for word in SUSPICIOUS_WORDS:
-        if word in name.lower():
+        if word in name_lower:
             score += 35
 
-    if "downloads" in path.lower():
+    path_lower = path.lower()
+    if "downloads" in path_lower:
         score += 15
 
-    if "temp" in path.lower():
+    if "temp" in path_lower:
         score += 20
 
-    if "startup" in path.lower():
+    if "startup" in path_lower:
         score += 40
 
     if score >= 70:
@@ -86,7 +88,9 @@ def scan_computer():
 
         for root, dirs, files in os.walk(folder):
 
-            if any(x.lower() in root.lower() for x in IGNORE_PATHS):
+            root_lower = root.lower()
+            if any(x.lower() in root_lower for x in IGNORE_PATHS):
+                dirs[:] = []
                 continue
 
             for file in files:
